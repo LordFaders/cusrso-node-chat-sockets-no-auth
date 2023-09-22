@@ -21,13 +21,22 @@ io.on('connection', (client) => {
 			.to(data.sala)
 			.emit('lista-personas', usuarios.getPersonasPorSala(data.sala));
 
+		client.broadcast
+			.to(data.sala)
+			.emit(
+				'crear-mensaje',
+				crearMensaje('Administrador', `${data.nombre} se unió.`)
+			);
+
 		callback(usuarios.getPersonasPorSala(data.sala));
 	});
 
-	client.on('crear-mensaje', (data) => {
+	client.on('crear-mensaje', (data, callback) => {
 		let persona = usuarios.getPersona(client.id);
 		let mensaje = crearMensaje(persona.nombre, data.msg);
 		client.broadcast.to(persona.sala).emit('crear-mensaje', mensaje);
+
+		callback(mensaje);
 	});
 
 	client.on('disconnect', () => {
@@ -37,7 +46,7 @@ io.on('connection', (client) => {
 			.to(personaBorrada.sala)
 			.emit(
 				'crear-mensaje',
-				crearMensaje('Admin', `${personaBorrada.nombre} salió.`)
+				crearMensaje('Administrador', `${personaBorrada.nombre} salió.`)
 			);
 		client.broadcast
 			.to(personaBorrada.sala)
